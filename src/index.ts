@@ -13,7 +13,7 @@ async function createTranslationUpdateRequest(
   }
 
   if (!version || version === "") {
-    console.error("VERSION environment variable not set");
+    console.info("Not running on non tag build");
     return;
   }
 
@@ -59,7 +59,7 @@ Please update the translation reference in the following Google Sheet:
 
 createTranslationUpdateRequest(
   process.env.PROJECT_NAME,
-  process.env.VERSION
+  process.env.TRAVIS_TAG
 ).catch((e) => {
   console.error(e);
   process.exit(1);
