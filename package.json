@@ -81,5 +81,6 @@
       "pre-commit": "npm run lint -s",
       "pre-push": "npm run build -s && npm run test -s"
     }
-  }
+  },
+  "version": "1.1.3"
 }
