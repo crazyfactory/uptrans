@@ -32,12 +32,14 @@ async function createTranslationUpdateRequest(
     process.env.GH_TOKEN
   );
 
-  const prTitle = `Translation update for ${projectName} v${version}`;
-  const prDescription = `**Translation update required for version ${version}**
+  const prTitle = `Translation update for ${projectName} ${version}`;
+  const prDescription = `**REMINDER : Translation may need to be update required for version ${version}**
 
-Please update the translation reference in the following Google Sheet:
+Please manually check and update the translation reference in the following Google Sheet:
 
 [Translation Reference Spreadsheet](${GOOGLE_SHEETS_URL})
+
+**FEEL FREE TO CLOSE THIS PR IF NO TRANSLATION UPDATE IS REQUIRED**
 
 ---
 *This is an automated notification created by uptrans*`;
