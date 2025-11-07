@@ -1,3 +1,10 @@
+## [1.1.6](https://github.com/crazyfactory/translation_updater/compare/v1.1.5...v1.1.6) (2025-11-07)
+
+
+### Bug Fixes
+
+* **pr:** adjust PR title and description. ([4a81694](https://github.com/crazyfactory/translation_updater/commit/4a816942ce167e7fb1cfbb45b89ab46e8c789cc6))
+
 ## [1.1.5](https://github.com/crazyfactory/translation_updater/compare/v1.1.4...v1.1.5) (2025-11-07)
 
 
