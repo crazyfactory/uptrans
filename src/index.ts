@@ -1,48 +1,66 @@
-import {existsSync, readFileSync} from "fs";
-import {UpdateLanguageFile} from "./UpdateLanguageFile";
+import { UpdateLanguageFile } from "./UpdateLanguageFile";
 
-async function copyTranslation(sourcePath: string = "", targetPath: string = "", projectName: string = ""): Promise<any> {
-  if (!targetPath || targetPath === "") {
-    console.error("TARGET_LANGUAGE_PATH path not set");
+const GOOGLE_SHEETS_URL =
+  "https://docs.google.com/spreadsheets/d/1oV9odTAVYUVMsX5vqM62hAZ7XdFeTGly5ikfVyM_qIo/";
+
+async function createTranslationUpdateRequest(
+  projectName: string = "",
+  version: string = ""
+): Promise<void> {
+  if (!projectName || projectName === "") {
+    console.error("PROJECT_NAME environment variable not set");
     return;
   }
-  if (!sourcePath || sourcePath === "") {
-    console.error("LANGUAGE_PATH path not set");
+
+  if (!version || version === "") {
+    console.error("VERSION environment variable not set");
     return;
   }
-  if (!existsSync(sourcePath)) {
-    console.error("LANGUAGE_PATH data file not found");
-    return;
-  }
-  if (!process.env.TRAVIS_TAG) {
-    console.info("Not running on non tag build");
-    return;
-  }
+
   if (!process.env.GH_TOKEN) {
     console.error("GH_TOKEN not set");
     return;
   }
-  if (!projectName || projectName === "") {
-    console.error("Project Name is required");
-    return;
+
+  // Get the repository owner and name from environment or use defaults
+  const repoOwner = process.env.REPO_OWNER || "crazyfactory";
+  const repoName = process.env.REPO_NAME || "shop";
+
+  const language = new UpdateLanguageFile(
+    repoOwner,
+    repoName,
+    process.env.GH_TOKEN
+  );
+
+  const prTitle = `Translation update for ${projectName} v${version}`;
+  const prDescription = `**Translation update required for version ${version}**
+
+Please update the translation reference in the following Google Sheet:
+
+[Translation Reference Spreadsheet](${GOOGLE_SHEETS_URL})
+
+---
+*This is an automated notification created by uptrans*`;
+
+  try {
+    const result = await language.createTranslationUpdatePr({
+      branch: `translation-update/${projectName}/${version}`,
+      title: prTitle,
+      body: prDescription,
+      version,
+    });
+
+    console.info("PR created: ", result.data.html_url);
+  } catch (e) {
+    console.error("Failed to create translation update PR:", e);
+    throw e;
   }
-  const language = new UpdateLanguageFile("crazyfactory", "shop", process.env.GH_TOKEN);
-  const content = readFileSync(sourcePath).toString();
-  return await language.createFileAndPr({
-    branch: `cfdemon/translation/${projectName}/${process.env.TRAVIS_TAG}`,
-    content,
-    message: "chore(i18n): update language files for configurator",
-    filePath: targetPath,
-    pullRequestBody: "",
-    pullRequestTitle: `update translations to ${process.env.TRAVIS_TAG}`
-  });
 }
 
-copyTranslation(process.env.LANGUAGE_PATH, process.env.TARGET_LANGUAGE_PATH, process.env.PROJECT_NAME).then((res) => {
-  if (!res) {
-    return;
-  }
-  console.info("PR created: ", res.data.html_url);
-}).catch((e) => {
+createTranslationUpdateRequest(
+  process.env.PROJECT_NAME,
+  process.env.VERSION
+).catch((e) => {
   console.error(e);
+  process.exit(1);
 });

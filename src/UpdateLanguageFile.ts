@@ -1,17 +1,10 @@
-import { Octokit } from "@octokit/rest"; // tslint:disable-line
+import { Octokit } from "@octokit/rest";
 
-interface IUpdateFileOptions {
-  content: string;
+interface ICreatePrOptions {
   branch: string;
-  message: string;
-  pullRequestTitle: string;
-  pullRequestBody: string;
-  filePath: string;
-}
-
-interface IFileInfo {
-  content: string;
-  sha: string;
+  title: string;
+  body: string;
+  version: string;
 }
 
 export class UpdateLanguageFile {
@@ -24,25 +17,19 @@ export class UpdateLanguageFile {
     });
   }
 
-  public async createFileAndPr(newContent: IUpdateFileOptions): Promise<any> {
-    console.info("getting content from file");
-    const content = await this.getContentFromFile(newContent.filePath);
-    console.info("creating a new branch: ", newContent.branch);
-    const branch = await this.createBranch(newContent.branch);
-    console.info("pushing new file...");
-    await this.github.rest.repos.createOrUpdateFileContents({
-      owner: this.owner,
-      repo: this.repo,
-      path: newContent.filePath,
-      message: newContent.message,
-      content: Buffer.from(newContent.content).toString("base64"),
-      sha: content.sha,
-      branch,
-    });
-    console.info("creating new pull request");
+  public async createTranslationUpdatePr(
+    options: ICreatePrOptions
+  ): Promise<any> {
+    console.info("creating a new branch: ", options.branch);
+    const branch = await this.createBranch(options.branch);
+
+    console.info("creating translation update marker file...");
+    await this.createTranslationMarkerFile(options.branch, options.version);
+
+    console.info("creating pull request");
     return await this.createPullRequest(
-      newContent.pullRequestTitle,
-      newContent.pullRequestBody,
+      options.title,
+      options.body,
       branch.replace("refs/heads/", "")
     );
   }
@@ -52,7 +39,7 @@ export class UpdateLanguageFile {
     body: string,
     branch: string
   ): Promise<any> {
-    console.info(title, body, branch, `${this.repo}:${branch}`);
+    console.info(title, body, branch);
     return await this.github.rest.pulls.create({
       owner: this.owner,
       repo: this.repo,
@@ -92,15 +79,22 @@ export class UpdateLanguageFile {
     return ref.data.object.sha;
   }
 
-  private async getContentFromFile(file: string): Promise<IFileInfo> {
-    const data = await this.github.rest.repos.getContent({
+  private async createTranslationMarkerFile(
+    branch: string,
+    version: string
+  ): Promise<void> {
+    const markerContent = `Translation update for version ${version}\nDate: ${new Date().toISOString()}\n`;
+    const encodedContent = Buffer.from(markerContent).toString("base64");
+
+    const fileParams: any = {
       owner: this.owner,
-      path: file,
       repo: this.repo,
-    });
-    return {
-      content: (data.data as any).content,
-      sha: (data.data as any).sha,
+      path: ".translation-update",
+      message: `chore: translation update for ${version}`,
+      content: encodedContent,
+      branch,
     };
+
+    await this.github.rest.repos.createOrUpdateFileContents(fileParams);
   }
 }
