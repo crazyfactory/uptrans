@@ -1,9 +1,10 @@
 {
   "compilerOptions": {
-    "target": "ES5",
+    "target": "es2018",
     "module": "commonjs",
     "esModuleInterop": true,
-    "lib": ["es5", "scripthost", "dom", "es6"],
+    "lib": ["es2018", "dom"],
+    "skipLibCheck": true,
     "noImplicitAny": true,
     "noImplicitThis": true,
     "noImplicitReturns": true,

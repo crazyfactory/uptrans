@@ -1,8 +1,7 @@
-import {PullRequestsCreateResponse, Response} from "@octokit/rest";
 import {existsSync, readFileSync} from "fs";
 import {UpdateLanguageFile} from "./UpdateLanguageFile";
 
-async function copyTranslation(sourcePath: string = "", targetPath: string = "", projectName: string = ""): Promise<Response<PullRequestsCreateResponse> | void> {
+async function copyTranslation(sourcePath: string = "", targetPath: string = "", projectName: string = ""): Promise<any> {
   if (!targetPath || targetPath === "") {
     console.error("TARGET_LANGUAGE_PATH path not set");
     return;

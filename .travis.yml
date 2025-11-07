@@ -1,26 +1,24 @@
-dist: trusty
+dist: focal
 language: node_js
 node_js:
-- "10"
+  - "20"
 
 cache:
   directories:
-  - node_modules
-  - /usr/local/lib/node_modules
-
-before_install:
-  - npm install -g greenkeeper-lockfile@1
-
-before_script: greenkeeper-lockfile-update
+    - node_modules
 
 script:
   - npm run build -s
   - npm run test -s
   - npm run lint -s
 
-after_script: greenkeeper-lockfile-upload
-
 after_success:
   - bash <(curl -s https://codecov.io/bash)
-  - npm install -g travis-deploy-once@4.3.4
-  - travis-deploy-once "npm run semantic-release" --pro
+
+deploy:
+  provider: script
+  script: npx semantic-release
+  skip_cleanup: true
+  on:
+    branch: master
+    node: "20"
